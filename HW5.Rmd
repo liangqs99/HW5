@@ -1,0 +1,347 @@
+---
+title: "HW5 GGPLOT Revisited"
+author: "Q Liang"
+date: "2/28/2024"
+output:
+  html_document: 
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    fig_width: 6
+    number_sections: yes
+    toc_collapsed: yes
+    code_folding: hide
+    code_download: yes
+    smooth_scroll: true
+    theme: readable
+    fig_height: 4
+---
+
+```{=html}
+<style type="text/css">
+
+div#TOC li {
+    list-style:none;
+    background-color:lightgray;
+    background-image:none;
+    background-repeat:none;
+    background-position:0;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #780c0c;
+}
+
+/* mouse over link */
+div#TOC a:hover {
+  color: red;
+}
+
+/* unvisited link */
+div#TOC a:link {
+  color: blue;
+}
+
+
+
+h1.title {
+  font-size: 24px;
+  color: Darkblue;
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-variant-caps: normal;
+}
+h4.author { 
+    font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkRed;
+  text-align: center;
+}
+h4.date { 
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkBlue;
+  text-align: center;
+}
+h1 {
+    font-size: 24px;
+    font-family: "Times New Roman", Times, serif;
+    color: darkred;
+    text-align: center;
+}
+h2 {
+    font-size: 18px;
+    font-family: "Times New Roman", Times, serif;
+    color: navy;
+    text-align: left;
+}
+
+h3 { 
+    font-size: 15px;
+    font-family: "Times New Roman", Times, serif;
+    color: navy;
+    text-align: left;
+}
+
+h4 { /* Header 4 - and the author and data headers use this too  */
+    font-size: 18px;
+    font-family: "Times New Roman", Times, serif;
+    color: darkred;
+    text-align: left;
+}
+
+/* unvisited link */
+a:link {
+  color: green;
+}
+
+/* visited link */
+a:visited {
+  color: green;
+}
+
+/* mouse over link */
+a:hover {
+  color: red;
+}
+
+/* selected link */
+a:active {
+  color: yellow;
+}
+
+</style>
+```
+```{r setup, include=FALSE}
+# code chunk specifies whether the R code, warnings, and output 
+# will be included in the output files.
+options(repos = list(CRAN="http://cran.rstudio.com/"))
+if (!require("tidyverse")) {
+   install.packages("tidyverse")
+   library(tidyverse)
+}
+if (!require("dplyr")) {
+   install.packages("dplyr")
+   library(dplyr)
+}
+if (!require("knitr")) {
+   install.packages("knitr")
+   library(knitr)
+}
+if (!require("cowplot")) {
+   install.packages("cowplot")
+   library(cowplot)
+}
+if (!require("latex2exp")) {
+   install.packages("latex2exp")
+   library(latex2exp)
+}
+if (!require("plotly")) {
+   install.packages("plotly")
+   library(plotly)
+}
+if (!require("gapminder")) {
+   install.packages("gapminder")
+   library(gapminder)
+}
+if (!require("png")) {
+    install.packages("png")             # Install png package
+    library("png")
+}
+
+              # Install RCurl package
+    
+
+if (!require("colourpicker")) {
+    install.packages("colourpicker")              
+    library("colourpicker")
+}
+if (!require("gifski")) {
+    install.packages("gifski")              
+    library("gifski")
+}
+if (!require("magick")) {
+    install.packages("magick")              
+    library("magick")
+}
+if (!require("grDevices")) {
+    install.packages("grDevices")              
+    library("grDevices")
+}
+### ggplot and extensions
+if (!require("ggplot2")) {
+    install.packages("ggplot2")              
+    library("ggplot2")
+}
+if (!require("gganimate")) {
+    install.packages("gganimate")              
+    library("gganimate")
+}
+if (!require("ggridges")) {
+    install.packages("ggridges")              
+    library("ggridges")
+}
+if (!require("graphics")) {
+    install.packages("graphics")              
+    library("graphics")
+}
+
+knitr::opts_chunk$set(echo = TRUE,       
+                      warning = FALSE,   
+                      result = TRUE,   
+                      message = FALSE,
+                      comment = NA)
+```
+
+\
+
+# Prepare a single data set
+
+1.  Reshape data set: Income Per Person to make a longitudinal data such that the resulting data set has three columns: country, year, and income. 
+
+```{r, fig.align='center'}
+#Read income_per_person.
+data0 <- read.csv ("/Users/qianshengliang/Dropbox/STA553/Week 5/income_per_person.csv",
+                   header=TRUE,sep=",")
+#change name.
+colnames(data0)[which(names(data0) == "geo")] <- "country"
+#names(data0)
+#Wide_to_long reshape
+data0a <- data0 %>%
+ pivot_longer(
+  cols = starts_with("X"),
+  names_to = "year",
+  names_prefix = "X",
+  #names_transform = list(year = as.integer),
+  values_to = "income",
+  values_drop_na = TRUE)
+#check
+#head(data0a)
+```
+
+2.  Do the same for Life Expectancy in Years so that the resulting data set has three columns: country, year, and life expectancy.
+
+```{r, fig.align='center'}
+#Read life_expectancy_years.
+data1 <- read.csv ("/Users/qianshengliang/Dropbox/STA553/Week 5/life_expectancy_years.csv",
+                   header=TRUE,sep=",")
+#change name.
+#data1[1:2,1:200]
+#names(data0)
+colnames(data1)[which(names(data1) == "geo")] <- "country"
+#names(data0)
+#Wide_to_long reshape
+data1a <- data1 %>%
+  pivot_longer(
+    cols = starts_with("X"),
+    names_to = "year",
+    names_prefix = "X",
+    #names_transform = list(Year = as.integer),
+    values_to = "lifeExp",
+    values_drop_na = TRUE)
+#check
+#head(data1a)
+```
+
+3.  Merge/join the above two longitudinal data sets to make a new data set, under name LifeExpIncom that has variables: country, year, lifeExp, and income.
+
+```{r, fig.align='center'}
+Life0 <- left_join(data0a, data1a, by = c("country","year"))
+#Life0
+```
+
+4. Merge LifeExpIncom with country region so that the final data set has information about income, life expectancy, and country region. 
+
+```{r, fig.align='center'}
+#Read countries_total.
+data2 <- read.csv ("/Users/qianshengliang/Dropbox/STA553/Week 5/countries_total.csv",
+                   header=TRUE,sep=",")
+#data2
+#change name
+#names(data2)
+colnames(data2)[which(names(data2) == "name")] <- "country"
+data2a <- data2[c(1,6)]
+#head(data2a)
+Life1 <- left_join(Life0, data2a, by = "country")
+#Life1
+```
+
+5. Merge the previous resulting data set with population size so that the final data set has information about income, life expectancy, population size, and country region.
+
+```{r, fig.align='center'}
+#Read population_total.
+data3 <- read.csv ("/Users/qianshengliang/Dropbox/STA553/Week 5/population_total.csv",
+                   header=TRUE,sep=",")
+#head(data3)
+#change name.
+#data3[1:5,1:10]
+#names(data3)
+colnames(data3)[which(names(data3) == "geo")] <- "country"
+#names(data3)
+#Wide_to_long reshape
+data3a <- data3 %>%
+  pivot_longer(
+    cols = starts_with("X"),
+    names_to = "year",
+    names_prefix = "X",
+    #names_transform = list(Year = as.integer),
+    values_to = "pop",
+    values_drop_na = TRUE)
+#check
+#head(data3a)
+#Final dataset
+LifeExpIncom <- left_join(Life1, data3a, by = c("country","year"))
+#LifeExpIncom
+#write.csv (LifeExpIncom, "/Users/qianshengliang/Dropbox/STA553/Week 5/LifeExpIncom.csv")
+DT::datatable(LifeExpIncom, fillContainer = FALSE, options = list(pageLength = 10))
+```
+
+This data set has 42267 observations and 6 variables.
+
+Create a subset of the above resulting longitudinal data set that contains only 2000 data - name it data2000.
+
+```{r, fig.align='center'}
+#2000data
+year.id=which(LifeExpIncom$year=="2000")
+data2000 = LifeExpIncom[year.id,]
+#data2000
+#sum(is.na(data2000))
+#write.csv (data2000, "/Users/qianshengliang/Dropbox/STA553/Week 5/data2000.csv")
+DT::datatable(data2000, fillContainer = FALSE, options = list(pageLength = 10))
+```
+
+# Prepare a graph by ggplot
+
+```{r, fig.align='center'}
+#ggplot
+cols1 = c("#332288","#117733","#44AA99","#88CCEE","#DDCC77","#CC6677")
+ggplot(data2000, aes(x = income, y = lifeExp, 
+                 color = region, 
+                 size = pop)) +
+  geom_point(alpha = 0.5) + scale_color_manual(values = cols1) +
+  labs(
+    x = "Income",
+    y = "Life Expectancy",
+    # label for legends
+    size = "Population:",
+    color = "Region:",
+    title = "Association between Income and Life Expectancy",
+    subtitle = "This is a partial scatter plot",
+    caption = paste("Created on", Sys.Date())) +
+  theme_minimal()   # minimal theme
+```
+
+The graph shows the relation between income and life expectancy of 193 countries/regions in 2000. The size of the points is proportioned to population and colors represent different continents. From this graph, we can find that:
+
+-  Most countries that have low life expectancy  are in Africa. 
+-  Most countries that have high life expectancy are in Europe.
+-  When income is under 5,000, life expectancy sharply increases to about 70 years when income increases. 
+-  When income is 5,000 to 30,000, life expectancy continues to increase slowly with income. 
+-  When income is 30,000 to 100,000, life expectancy slightly decreases with income.
+-  For the countries with longest life expectancy, the income is 30,000 to 40,000  and the population is usually under 250 million.
+
+
+
+
+
+
+
+
